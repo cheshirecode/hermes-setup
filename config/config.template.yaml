@@ -1,0 +1,22 @@
+# ==============================================================================
+# Hermes Agent Configuration Template (Optimized for OpenRouter Free Plan)
+# ==============================================================================
+
+model:
+  provider: openrouter
+  default: openrouter/free
+  fallbacks:
+    - openai/gpt-oss-20b:free
+    - nvidia/nemotron-3-super-120b-a12b:free
+    - google/gemma-4-31b-it:free
+
+terminal:
+  backend: local
+  timeout: 180
+
+memory:
+  enabled: true
+
+display:
+  interface: tui
+  reasoning: true

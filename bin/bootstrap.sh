@@ -14,6 +14,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+HERMES_HOME="${HERMES_HOME/#\~/$HOME}"
 
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
@@ -49,10 +50,15 @@ if [[ ! -f "$REPO_ROOT/.env" ]]; then
   cp "$REPO_ROOT/.env.example" "$REPO_ROOT/.env"
   chmod 0600 "$REPO_ROOT/.env"
 
-  # Auto-probe OpenRouter key from OpenCode auth.json if available
-  OPENCODE_AUTH="$HOME/.local/share/opencode/auth.json"
-  if [[ -s "$OPENCODE_AUTH" ]]; then
-    PROBED_KEY=$(python3 -c '
+  # Auto-probe keys from environment / shell_common
+  DOTFILES_QUIET=1 source "$HOME/.shell_common" >/dev/null 2>&1 || true
+
+  OPENROUTER_KEY="${OPEN_ROUTER_API_KEY_HERMES:-${OPENROUTER_API_KEY:-}}"
+  HERMES_KEY="${HERMES_API_KEY_FREE:-${NOUS_API_KEY:-${HERMES_API_KEY:-}}}"
+
+  # Fallback: probe OpenCode auth.json for OpenRouter key if not in env
+  if [[ -z "$OPENROUTER_KEY" && -s "$HOME/.local/share/opencode/auth.json" ]]; then
+    OPENROUTER_KEY=$(python3 -c '
 import json, sys
 try:
     with open(sys.argv[1]) as f:
@@ -62,14 +68,24 @@ try:
             print(k)
 except Exception:
     pass
-' "$OPENCODE_AUTH" 2>/dev/null || true)
-    if [[ -n "$PROBED_KEY" ]]; then
-      log_info "Detected active OpenRouter credentials from OpenCode. Adding to .env..."
-      sed -i.bak "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$PROBED_KEY|" "$REPO_ROOT/.env" 2>/dev/null || \
-        sed -i "" "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$PROBED_KEY|" "$REPO_ROOT/.env" 2>/dev/null || true
-      rm -f "$REPO_ROOT/.env.bak"
-    fi
+' "$HOME/.local/share/opencode/auth.json" 2>/dev/null || true)
   fi
+
+  if [[ -n "$OPENROUTER_KEY" ]]; then
+    log_info "Detected OpenRouter credentials. Adding to .env..."
+    sed -i.bak "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$OPENROUTER_KEY|" "$REPO_ROOT/.env" 2>/dev/null || \
+      sed -i "" "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=$OPENROUTER_KEY|" "$REPO_ROOT/.env" 2>/dev/null || true
+    rm -f "$REPO_ROOT/.env.bak"
+  fi
+
+  if [[ -n "$HERMES_KEY" ]]; then
+    log_info "Detected Hermes/Nous Portal credentials. Adding to .env..."
+    sed -i.bak "s|^NOUS_API_KEY=.*|NOUS_API_KEY=$HERMES_KEY|" "$REPO_ROOT/.env" 2>/dev/null || \
+      sed -i "" "s|^NOUS_API_KEY=.*|NOUS_API_KEY=$HERMES_KEY|" "$REPO_ROOT/.env" 2>/dev/null || true
+    echo "HERMES_API_KEY=$HERMES_KEY" >> "$REPO_ROOT/.env"
+    rm -f "$REPO_ROOT/.env.bak"
+  fi
+
   log_success "Created .env (permissions: 0600)"
 else
   log_info "Existing .env found."
@@ -79,6 +95,8 @@ fi
 # shellcheck disable=SC1091
 if [[ -f "$REPO_ROOT/.env" ]]; then
   export $(grep -v '^#' "$REPO_ROOT/.env" | xargs -r 2>/dev/null) || true
+  HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+  HERMES_HOME="${HERMES_HOME/#\~/$HOME}"
 fi
 
 # 2. Setup Mode
@@ -104,17 +122,20 @@ log_info "Setting up Hermes Agent in Native mode..."
 # Ensure Astral uv is installed
 if ! command -v uv >/dev/null 2>&1; then
   log_info "Installing Astral uv..."
-  curl -fsSL https://astral.sh/uv/install.sh | sh
+  curl -fsSL https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local/bin" sh 2>/dev/null || \
+    curl -fsSL https://astral.sh/uv/install.sh | sh
   export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 fi
 log_success "Astral uv ready: $(uv --version)"
 
-# Install hermes-agent CLI
-if ! command -v hermes >/dev/null 2>&1; then
-  log_info "Installing Hermes Agent via official installer..."
-  curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --skip-setup
-  export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-fi
+# Install hermes-agent CLI via managed virtualenv
+log_info "Installing / updating Hermes Agent using uv..."
+mkdir -p "$HERMES_HOME" "$HOME/.local/bin"
+uv venv "$HERMES_HOME/venv" --python python3.11 2>/dev/null || uv venv "$HERMES_HOME/venv" --python python3
+uv pip install --python "$HERMES_HOME/venv" --quiet hermes-agent
+ln -sf "$HERMES_HOME/venv/bin/hermes" "$HOME/.local/bin/hermes"
+export PATH="$HOME/.local/bin:$HERMES_HOME/venv/bin:$PATH"
+log_success "Hermes CLI ready: $("$HERMES_HOME/venv/bin/hermes" --version | head -1)"
 
 # Ensure ~/.hermes directory exists and sync repo config
 log_info "Syncing configurations, personas, and custom skills to $HERMES_HOME..."
@@ -127,12 +148,16 @@ cp "$REPO_ROOT/config/AGENTS.md" "$HERMES_HOME/AGENTS.md"
 # Copy custom skills
 cp -r "$REPO_ROOT/skills/"* "$HERMES_HOME/skills/"
 
-# Seed config.json if not present
-if [[ ! -f "$HERMES_HOME/config.json" ]]; then
-  log_info "Seeding $HERMES_HOME/config.json from template..."
-  API_KEY="${OPENROUTER_API_KEY:-}"
-  sed "s|\"api_key\": \".*\"|\"api_key\": \"$API_KEY\"|g" "$REPO_ROOT/config/config.template.json" > "$HERMES_HOME/config.json"
-  chmod 0600 "$HERMES_HOME/config.json"
+# Sync config.yaml
+if [[ -f "$REPO_ROOT/config/config.template.yaml" ]]; then
+  cp "$REPO_ROOT/config/config.template.yaml" "$HERMES_HOME/config.yaml"
+  chmod 0600 "$HERMES_HOME/config.yaml"
+fi
+
+# Write ~/.hermes/.env
+if [[ -f "$REPO_ROOT/.env" ]]; then
+  cp "$REPO_ROOT/.env" "$HERMES_HOME/.env"
+  chmod 0600 "$HERMES_HOME/.env"
 fi
 
 log_success "Hermes Agent configuration and skills synced."

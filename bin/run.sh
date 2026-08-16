@@ -8,10 +8,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+HERMES_HOME="${HERMES_HOME/#\~/$HOME}"
+
 # Load .env if present
 if [[ -f "$REPO_ROOT/.env" ]]; then
   export $(grep -v '^#' "$REPO_ROOT/.env" | xargs -r 2>/dev/null) || true
+  HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+  HERMES_HOME="${HERMES_HOME/#\~/$HOME}"
 fi
+
+export PATH="$HOME/.local/bin:$HERMES_HOME/venv/bin:$PATH"
 
 # Auto-fallback to Docker if native hermes CLI is not installed
 if command -v hermes >/dev/null 2>&1; then

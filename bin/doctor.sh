@@ -8,6 +8,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+HERMES_HOME="${HERMES_HOME/#\~/$HOME}"
+
+# Load .env if present
+if [[ -f "$REPO_ROOT/.env" ]]; then
+  export $(grep -v '^#' "$REPO_ROOT/.env" | xargs -r 2>/dev/null) || true
+  HERMES_HOME="${HERMES_HOME:-$HOME/.hermes}"
+  HERMES_HOME="${HERMES_HOME/#\~/$HOME}"
+fi
+
+export PATH="$HOME/.local/bin:$HERMES_HOME/venv/bin:$PATH"
 
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
@@ -43,7 +53,7 @@ fi
 if [[ -d "$HERMES_HOME" ]]; then
   say_ok "Hermes data directory exists at $HERMES_HOME"
   [[ -f "$HERMES_HOME/SOUL.md" ]] && say_ok "SOUL.md persona present" || say_warn "SOUL.md missing in $HERMES_HOME (run ./bin/sync.sh)"
-  [[ -f "$HERMES_HOME/config.json" ]] && say_ok "config.json present" || say_warn "config.json missing in $HERMES_HOME"
+  [[ -f "$HERMES_HOME/config.yaml" || -f "$HERMES_HOME/config.json" ]] && say_ok "Hermes configuration present ($( [ -f "$HERMES_HOME/config.yaml" ] && echo "config.yaml" || echo "config.json" ))" || say_warn "configuration missing in $HERMES_HOME"
   [[ -d "$HERMES_HOME/skills" ]] && say_ok "Custom skills directory present ($(ls -1 "$HERMES_HOME/skills" 2>/dev/null | wc -l | tr -d ' ') skills)" || say_warn "skills directory missing in $HERMES_HOME"
 else
   say_warn "$HERMES_HOME directory not yet created (run ./bin/bootstrap.sh)"
@@ -52,19 +62,21 @@ fi
 # 3. Environment & Credentials check (values masked)
 echo ""
 echo "Credentials & Providers:"
-if [[ -f "$REPO_ROOT/.env" ]]; then
-  say_ok "Local .env file found (mode: $(stat -c '%a' "$REPO_ROOT/.env" 2>/dev/null || echo '0600'))"
+if [[ -f "$REPO_ROOT/.env" || -f "$HERMES_HOME/.env" ]]; then
+  ACTIVE_ENV="$([ -f "$REPO_ROOT/.env" ] && echo "$REPO_ROOT/.env" || echo "$HERMES_HOME/.env")"
+  say_ok "Active .env file found at $ACTIVE_ENV (mode: $(stat -c '%a' "$ACTIVE_ENV" 2>/dev/null || echo '0600'))"
   # Check if OpenRouter or other keys are populated
-  if grep -qE '^OPENROUTER_API_KEY=[a-zA-Z0-9_-]+' "$REPO_ROOT/.env"; then
-    say_ok "OPENROUTER_API_KEY is configured in .env"
-  elif grep -qE '^NOUS_API_KEY=[a-zA-Z0-9_-]+' "$REPO_ROOT/.env"; then
-    say_ok "NOUS_API_KEY is configured in .env"
-  elif grep -qE '^OPENAI_API_KEY=[a-zA-Z0-9_-]+' "$REPO_ROOT/.env"; then
-    say_ok "OPENAI_API_KEY is configured in .env"
-  elif grep -qE '^ANTHROPIC_API_KEY=[a-zA-Z0-9_-]+' "$REPO_ROOT/.env"; then
-    say_ok "ANTHROPIC_API_KEY is configured in .env"
-  else
-    say_warn "No active LLM API keys detected in .env"
+  if grep -qE '^OPENROUTER_API_KEY=[a-zA-Z0-9_-]+' "$ACTIVE_ENV"; then
+    say_ok "OPENROUTER_API_KEY is configured (OpenRouter Free / Paid)"
+  fi
+  if grep -qE '^(NOUS_API_KEY|HERMES_API_KEY)=[a-zA-Z0-9_-]+' "$ACTIVE_ENV"; then
+    say_ok "NOUS_API_KEY / HERMES_API_KEY is configured (Nous Portal Free / Paid)"
+  fi
+  if grep -qE '^OPENAI_API_KEY=[a-zA-Z0-9_-]+' "$ACTIVE_ENV"; then
+    say_ok "OPENAI_API_KEY is configured"
+  fi
+  if grep -qE '^ANTHROPIC_API_KEY=[a-zA-Z0-9_-]+' "$ACTIVE_ENV"; then
+    say_ok "ANTHROPIC_API_KEY is configured"
   fi
 else
   say_warn ".env file missing (copy .env.example to .env and add API keys)"
