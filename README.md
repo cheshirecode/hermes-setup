@@ -111,6 +111,29 @@ cd /opt/hermes-setup
 
 ---
 
+## Continuous Improvement & Safe Source Control
+
+As Hermes Agent solves problems, it creates new skills and refines its persona inside `~/.hermes/skills/` and `~/.hermes/`.
+
+To safely promote and commit these improvements **without leaking secrets**:
+
+```bash
+# 1. Preview newly learned skills and non-secret changes
+./bin/export-learnings.sh
+
+# 2. Export and sanitize (automatically scrubs API keys & tokens)
+./bin/export-learnings.sh --apply
+
+# 3. Review, commit, and push to GitHub
+git status && git diff
+git commit -am "feat(skills): add learned skills from recent sessions"
+git push origin main
+```
+
+A pre-commit scanner (`.githooks/pre-commit`) blocks any commit containing API key patterns, private tokens, or unencrypted secrets.
+
+---
+
 ## Synchronizing Changes Across Machines
 
 When you update `config/SOUL.md`, `config/AGENTS.md`, or add new skills to `skills/`:
