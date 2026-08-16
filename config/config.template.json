@@ -1,0 +1,43 @@
+{
+  "$schema": "https://hermes-agent.nousresearch.com/schema/config.json",
+  "provider": "openrouter",
+  "model": "openrouter/google/gemini-3.7-flash",
+  "fallback_models": [
+    "openrouter/nousresearch/hermes-3-llama-3.1-405b",
+    "openrouter/qwen/qwen3.7-plus",
+    "openrouter/deepseek/deepseek-chat"
+  ],
+  "temperature": 0.2,
+  "max_tokens": 8192,
+  "memory": {
+    "enabled": true,
+    "auto_curation": true,
+    "recall_limit": 10
+  },
+  "subagents": {
+    "enabled": true,
+    "max_concurrent": 4,
+    "default_model": "openrouter/qwen/qwen3.7-flash"
+  },
+  "tools": {
+    "terminal": {
+      "backend": "local",
+      "timeout": 120
+    },
+    "browser": {
+      "enabled": true,
+      "headless": true
+    },
+    "web_search": {
+      "enabled": true,
+      "provider": "auto"
+    },
+    "python_interpreter": {
+      "enabled": true
+    }
+  },
+  "security": {
+    "command_approval": "sensitive_only",
+    "block_secrets_leak": true
+  }
+}

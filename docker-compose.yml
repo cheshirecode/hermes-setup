@@ -1,0 +1,35 @@
+services:
+  hermes-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    image: hermes-agent:local
+    container_name: hermes-agent
+    hostname: hermes-agent
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "${HERMES_PORT:-8080}:8080"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - NOUS_API_KEY=${NOUS_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      - hermes-data:/home/hermes/.hermes
+      - ${HERMES_WORKSPACE:-./workspace}:/workspace
+      - ./config/SOUL.md:/home/hermes/.hermes/SOUL.md:ro
+      - ./config/AGENTS.md:/home/hermes/.hermes/AGENTS.md:ro
+      - ./skills:/home/hermes/.hermes/skills:ro
+
+volumes:
+  hermes-data:
+    name: hermes-agent-data

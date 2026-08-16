@@ -1,0 +1,14 @@
+[
+  {
+    "name": "daily-system-health-check",
+    "schedule": "0 8 * * *",
+    "prompt": "Run doctor check on active services, inspect disk usage, check pending git changes, and output a concise 3-line summary.",
+    "deliver_to": "cli"
+  },
+  {
+    "name": "weekly-repo-backup-sync",
+    "schedule": "0 2 * * 0",
+    "prompt": "Inspect workspace repositories for unpushed commits and clean working trees, report any repositories needing sync.",
+    "deliver_to": "cli"
+  }
+]

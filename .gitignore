@@ -1,0 +1,55 @@
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+*.env
+*.secrets
+secrets/
+
+# Live active configs containing API keys (use config/config.template.json instead)
+config.json
+credentials.json
+auth.json
+tokens.json
+*_token
+
+# Runtime databases, persistent memory & session state
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+sessions/
+trajectories/
+memory/
+.hermes/
+.sandbox-home/
+
+# Logs and debug artifacts
+*.log
+logs/
+tool-output/
+learnings-inbox/
+
+# Python virtualenvs and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node caches
+node_modules/
+.npm/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
