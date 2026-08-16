@@ -1,14 +1,19 @@
 # ==============================================================================
-# Hermes Agent Configuration Template (Optimized for OpenRouter Free Plan)
+# Hermes Agent Configuration (Primary: Hermes/Nous Portal -> Fallback: OpenRouter)
 # ==============================================================================
 
+custom_providers:
+  - name: hermes_portal
+    base_url: https://inference-api.nousresearch.com/v1
+    transport: openai_chat
+
 model:
-  provider: openrouter
-  default: openrouter/free
-  fallbacks:
-    - openai/gpt-oss-20b:free
-    - nvidia/nemotron-3-super-120b-a12b:free
-    - google/gemma-4-31b-it:free
+  provider: hermes_portal
+  default: z-ai/glm-5.2
+
+fallback_providers:
+  - provider: openrouter
+    model: openrouter/free
 
 terminal:
   backend: local

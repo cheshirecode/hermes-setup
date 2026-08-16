@@ -148,9 +148,30 @@ cp "$REPO_ROOT/config/AGENTS.md" "$HERMES_HOME/AGENTS.md"
 # Copy custom skills
 cp -r "$REPO_ROOT/skills/"* "$HERMES_HOME/skills/"
 
-# Sync config.yaml
+# Sync config.yaml (seeding keys if needed)
 if [[ -f "$REPO_ROOT/config/config.template.yaml" ]]; then
-  cp "$REPO_ROOT/config/config.template.yaml" "$HERMES_HOME/config.yaml"
+  HERMES_KEY="${HERMES_API_KEY_FREE:-${NOUS_API_KEY:-${HERMES_API_KEY:-}}}"
+  if [[ -n "$HERMES_KEY" ]]; then
+    python3 -c '
+import yaml, os, sys
+
+template_path = sys.argv[1]
+output_path = sys.argv[2]
+hermes_key = sys.argv[3]
+
+with open(template_path) as f:
+    cfg = yaml.safe_load(f)
+
+for cp in cfg.get("custom_providers", []):
+    if cp.get("name") == "hermes_portal":
+        cp["api_key"] = hermes_key
+
+with open(output_path, "w") as f:
+    yaml.dump(cfg, f, default_flow_style=False)
+' "$REPO_ROOT/config/config.template.yaml" "$HERMES_HOME/config.yaml" "$HERMES_KEY"
+  else
+    cp "$REPO_ROOT/config/config.template.yaml" "$HERMES_HOME/config.yaml"
+  fi
   chmod 0600 "$HERMES_HOME/config.yaml"
 fi
 
