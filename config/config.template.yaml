@@ -1,5 +1,7 @@
+---
 # ==============================================================================
-# Hermes Agent Configuration (Primary: Hermes/Nous Portal -> Fallback: OpenRouter)
+# Hermes Agent Configuration
+# Primary: Hermes/Nous Portal -> Fallback: OpenRouter
 # ==============================================================================
 
 custom_providers:
