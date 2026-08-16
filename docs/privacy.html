@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Hermes Agent</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: #12151f;
+      --border: #232936;
+      --text: #f0f3f6;
+      --text-muted: #94a3b8;
+      --accent: #6366f1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 0;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-size: 0.95rem;
+    }
+    nav a:hover { color: var(--text); }
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3.5rem 2rem;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    h2 {
+      font-size: 1.4rem;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: #fff;
+    }
+    p, ul {
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+    ul {
+      margin-left: 1.5rem;
+    }
+    li {
+      margin-bottom: 0.5rem;
+    }
+    .highlight-box {
+      background: var(--card-bg);
+      border-left: 4px solid var(--accent);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .highlight-box p {
+      color: var(--text);
+      margin: 0;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin: 0 0.75rem;
+    }
+    footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="./" class="logo">⚕ Hermes Agent</a>
+    <nav>
+      <a href="./">Home</a>
+      <a href="privacy.html" style="color: #fff;">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="https://github.com/cheshirecode/hermes-setup" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Privacy Policy</h1>
+    <div class="meta">Last Updated: August 16, 2026 • Application: Hermes Agent (GCP Project: principal-lane-485806-i9)</div>
+
+    <h2>1. Overview</h2>
+    <p>
+      Hermes Agent ("the Application", "we", "us", or "our") is an open-source autonomous assistant developed by cheshirecode. We are committed to protecting your privacy and ensuring you have complete control over your data. This Privacy Policy describes how your information is handled when using Hermes Agent and its Google Workspace integrations (Google Drive and Google Sheets).
+    </p>
+
+    <h2>2. Information Collection and Access</h2>
+    <p>
+      Hermes Agent operates as a client-side application. When you connect Hermes Agent to your Google Account via OAuth 2.0, the application requests access strictly to the following scopes:
+    </p>
+    <ul>
+      <li><strong><code>https://www.googleapis.com/auth/drive.readonly</code></strong>: To search and read documents, PDFs, and files in your Google Drive solely upon your explicit instruction.</li>
+      <li><strong><code>https://www.googleapis.com/auth/spreadsheets</code></strong>: To read, format, and modify Google Sheets spreadsheets upon your explicit command.</li>
+    </ul>
+
+    <h2>3. How We Use Information</h2>
+    <p>
+      Information accessed from your Google Drive is used exclusively to:
+    </p>
+    <ul>
+      <li>Perform file search and content extraction requested by you in prompt turns.</li>
+      <li>Read spreadsheet rows and columns to answer your specific analytical queries.</li>
+      <li>Enable local context indexing within your private Hermes Agent session.</li>
+    </ul>
+
+    <div class="highlight-box">
+      <h3 style="color: #fff; margin-bottom: 0.5rem;">Google API Services User Data Policy Compliance</h3>
+      <p>
+        Hermes Agent's use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" style="color: #a5b4fc;" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the <strong>Limited Use</strong> requirements.
+      </p>
+    </div>
+
+    <h2>4. Data Storage and Security</h2>
+    <p>
+      All OAuth tokens and session data are stored locally on your device (in <code>~/.config/gdrive-mcp/</code> or your local container volume) with restricted file permissions (<code>0600</code>).
+    </p>
+    <ul>
+      <li>We do not operate external centralized databases storing your Google Drive content.</li>
+      <li>We do not transfer your personal files to external third-party servers.</li>
+      <li>We never use your Google Drive data to train machine learning models.</li>
+    </ul>
+
+    <h2>5. Information Sharing and Disclosure</h2>
+    <p>
+      We do not sell, rent, trade, or share your Google user data with any third parties, advertisers, or commercial entities under any circumstances.
+    </p>
+
+    <h2>6. User Control and Data Revocation</h2>
+    <p>
+      You maintain total ownership and control of your data. You may revoke Hermes Agent's access to your Google Account at any time by visiting <a href="https://myaccount.google.com/permissions" style="color: #a5b4fc;" target="_blank" rel="noopener">Google Account Permissions</a> and removing access for the application. You can also delete local credential files on your machine by removing the <code>~/.config/gdrive-mcp/</code> directory.
+    </p>
+
+    <h2>7. Contact Information</h2>
+    <p>
+      If you have questions about this Privacy Policy or the security practices of Hermes Agent, please open an issue on the official GitHub repository at <a href="https://github.com/cheshirecode/hermes-setup/issues" style="color: #a5b4fc;" target="_blank" rel="noopener">https://github.com/cheshirecode/hermes-setup/issues</a>.
+    </p>
+  </main>
+
+  <footer>
+    <p>© 2026 Hermes Agent (cheshirecode). Open Source under MIT License.</p>
+    <div style="margin-top: 1rem;">
+      <a href="./">Home</a>
+      •
+      <a href="privacy.html">Privacy Policy</a>
+      •
+      <a href="terms.html">Terms of Service</a>
+      •
+      <a href="https://github.com/cheshirecode/hermes-setup" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>
